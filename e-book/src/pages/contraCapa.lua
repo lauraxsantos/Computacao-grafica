@@ -2,6 +2,7 @@ local composer = require("composer")
 local scene = composer.newScene()
 
 local navButtons = require("src.components.navButtons")
+local soundImage = require("src.components.soundImage")
 
 function scene:create(event)
     local sceneGroup = self.view
@@ -13,6 +14,8 @@ function scene:create(event)
     navButtons.createBackButton(sceneGroup, "src.pages.capa")
 
     navButtons.createPrevButton(sceneGroup, "src.pages.pag6")
+
+    soundImage.createSound(sceneGroup, "src/assets/sounds/contra.mp3")
 end
 
 scene:addEventListener("create", scene)
