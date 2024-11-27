@@ -73,6 +73,20 @@ function scene:create(event)
     background.y = background.y - (screenHeight / 2 - (screenHeight - 50) / 2)
     background:setFillColor(0.725, 0.580, 0.439)
 
+    local function abrirModal()
+        composer.showOverlay("src.pages.pag3.modal", {
+            isModal = true, 
+            effect = "fade",
+            time = 400
+        })
+    end
+
+    local openButton = display.newImageRect(sceneGroup,"src/assets/info.png",  35, 35);
+    openButton.x = display.contentWidth - 710
+    openButton.y = display.contentHeight/2 - 460
+    
+    openButton:addEventListener("tap", abrirModal)
+
     local titulo = display.newText({
         parent = sceneGroup,
         text = "Reinos",
@@ -107,8 +121,6 @@ function scene:create(event)
         fontSize = 40
     })
     tituloInteracao:setFillColor(0, 0, 0)
-    -- tituloInteracao.strokeWidth = 8  
-    -- tituloInteracao:setStrokeColor(1,0,0)
 
     local instrucao = display.newText({
         parent = sceneGroup,
@@ -132,7 +144,7 @@ function scene:create(event)
     })
     pageNumberText:setFillColor(0.976, 0.922, 0.780)
 
-    navButtons.createNextButton(sceneGroup, "src.pages.pag4")
+    navButtons.createNextButton(sceneGroup, "src.pages.pag4.pag4")
 
     navButtons.createPrevButton(sceneGroup, "src.pages.pag2.pag2")
 
@@ -197,22 +209,73 @@ function scene:create(event)
     botaoAvancar.y = caixa.y+20
     botaoAvancar:addEventListener("touch", avancar)
 
-    local function avancarImagem(event)
-        if imagem then
-            imagem:removeSelf()
-        end
-        
-        if event.phase == "ended" then
-            indiceImagem = indiceImagem + 1
-            if indiceImagem > #imagens then
-                indiceImagem = 1 
-            end
-        end
+    system.activate( "multitouch" )
 
+    local finger1, finger2
+    local initialDistance
+    local isZooming = false
+
+    local function calculateDistance(x1, y1, x2, y2)
+        local dx = x2 - x1
+        local dy = y2 - y1
+        return math.sqrt(dx * dx + dy * dy)
+    end
+
+    local function atualizarImagem(sceneGroup, imagens)
+        if imagem then
+            imagem:removeSelf() 
+        end
+    
         tituloInteracao.text = imagens[indiceImagem].titulo 
         imagem = display.newImageRect(sceneGroup, imagens[indiceImagem].imagem, 300, 300)
-        imagem.x = display.contentCenterX 
+        imagem.x = display.contentCenterX
         imagem.y = display.contentCenterY + 280
+    end
+
+    local function avancarImagem(event)
+        
+        if event.phase == "began" then
+            if not finger1 then
+                finger1 = event
+            elseif not finger2 then
+                finger2 = event
+                isZooming = true
+                initialDistance = calculateDistance(finger1.x, finger1.y, finger2.x, finger2.y)
+            end
+        elseif event.phase == "moved" and isZooming then
+            if finger1 and event.id == finger1.id then
+                finger1 = event
+            elseif finger2 and event.id == finger2.id then
+                finger2 = event
+            end
+    
+            if finger1 and finger2 then
+                local currentDistance = calculateDistance(finger1.x, finger1.y, finger2.x, finger2.y)
+                local scale = currentDistance / initialDistance
+    
+                if scale > 1.1 and indiceImagem < #imagens then
+                    indiceImagem = indiceImagem + 1
+                    atualizarImagem(sceneGroup, imagens)
+                elseif scale < 0.9 and indiceImagem > 1 then
+                    indiceImagem = indiceImagem - 1
+                    atualizarImagem(sceneGroup, imagens)
+                end
+    
+                initialDistance = currentDistance 
+            end
+        elseif event.phase == "ended" or event.phase == "cancelled" then
+            if finger1 and event.id == finger1.id then
+                finger1 = nil
+            elseif finger2 and event.id == finger2.id then
+                finger2 = nil
+            end
+    
+            if not finger1 or not finger2 then
+                isZooming = false
+            end
+        end
+        
+        return true
     end
     
     local imagem = display.newImageRect(sceneGroup, imagens[indiceImagem].imagem, 300, 300)
@@ -226,7 +289,8 @@ end
 composer.recycleOnSceneChange = true
 
 function scene:destroy()
-    -- s:disposeSound()
+    system.deactivate( "multitouch" )
+    Runtime:removeEventListener("touch", avancarImagem)
 end
 
 scene:addEventListener("destroy", scene)

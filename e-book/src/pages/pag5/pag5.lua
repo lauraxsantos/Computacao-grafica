@@ -64,11 +64,13 @@ function scene:create(event)
 
     local areas = {}
     for i, label in ipairs(ordens) do
-        local area = display.newRoundedRect(sceneGroup, display.contentWidth * 0.25 * i, display.contentHeight * 0.8, 150, 150,10)
+        local area = display.newRoundedRect(sceneGroup, display.contentWidth * 0.35 * i, display.contentHeight * 0.8, 250, 250, 90)
         area:setFillColor(0.8, 0.8, 0.8, 0.5)
         area.label = label
-        display.newText(sceneGroup, "Ordem " ..label, area.x, area.y - 140, bacasime, 16)
-        display.newText(sceneGroup, "Família " ..familias[i], area.x, area.y - 100, bacasime, 16)
+        a = display.newText(sceneGroup, "Ordem " ..label, area.x, area.y - 160, bacasime, 16)
+        b = display.newText(sceneGroup, "Família " ..familias[i], area.x, area.y - 140, bacasime, 16)
+        a:setFillColor(0,0,0)
+        b:setFillColor(0,0,0)
         areas[#areas + 1] = area
     end
 
@@ -81,11 +83,11 @@ function scene:create(event)
         elementos[#elementos + 1] = elemento
     end
 
-    criarElemento("src/pages/pag5/lobo.png", "Lobo", display.contentWidth * 0.5, display.contentHeight * 0.3)
-    criarElemento("src/pages/pag5/cachorro.png", "Cachorro", display.contentWidth * 0.5, display.contentHeight * 0.6)
-    criarElemento("src/pages/pag5/gorila.png", "Gorila", display.contentWidth * 0.5, display.contentHeight * 0.4)
-    criarElemento("src/pages/pag5/orangotango.png", "Orangotango", display.contentWidth * 0.5, display.contentHeight * 0.5)
-    print( active )
+    criarElemento("src/pages/pag5/lobo.png", "Lobo", display.contentWidth * 0.35, display.contentHeight * 0.45)
+    criarElemento("src/pages/pag5/cachorro.png", "Cachorro", display.contentWidth * 0.45, display.contentHeight * 0.45)
+    criarElemento("src/pages/pag5/gorila.png", "Gorila", display.contentWidth * 0.55, display.contentHeight * 0.45)
+    criarElemento("src/pages/pag5/orangotango.png", "Orangotango", display.contentWidth * 0.65, display.contentHeight * 0.45)
+
     if active then
         local function onAccelerometer(event)
             for _, elemento in ipairs(elementos) do
@@ -139,6 +141,17 @@ function scene:create(event)
         end
     end
 
+    local instrucion = display.newText({
+        parent = sceneGroup,
+        text= "Mova o dispositivo para um lado e para o outro para visualizar representantes da mesma ordem e família",
+        x = display.contentCenterX,
+        y = display.contentCenterY + 50,  
+        width = 700,
+        font = badScript,
+        fontSize = 24,
+        align = 'center'
+    });
+
     local pageNumberText = display.newText({
         parent = sceneGroup,
         text = "5",  
@@ -150,8 +163,8 @@ function scene:create(event)
     pageNumberText:setFillColor(0.372549, 0.435294, 0.321569)
     navButtons.createNextButton(sceneGroup, "src.pages.pag6")
     
-    navButtons.createPrevButton(sceneGroup, "src.pages.pag4")
-    soundImage.createSound(sceneGroup)
+    navButtons.createPrevButton(sceneGroup, "src.pages.pag4.pag4")
+    soundImage.createSound(sceneGroup, "src/assets/sounds/pag5.mp3")
 
     if composer.getSceneName("current") == "src.pages.pag5.pag5" then
         composer.removeScene("src.pages.pag5.pag5")
@@ -161,6 +174,13 @@ end
 
 composer.recycleOnSceneChange = true
 
+function scene:destroy()
+    Runtime:removeEventListener("accelerometer", onAccelerometer)
+    Runtime:removeEventListener("enterFrame", verificarLimites)
+    Runtime:removeEventListener("enterFrame", verificarColisoes)
+end
+
+scene:addEventListener("destroy", scene)
 scene:addEventListener("create", scene)
 
 return scene

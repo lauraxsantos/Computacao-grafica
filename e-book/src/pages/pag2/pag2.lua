@@ -32,6 +32,20 @@ function scene:create(event)
 
     s = soundImage.createSound(sceneGroup, "src/assets/sounds/pag2.mp3")
 
+    local function abrirModal()
+        composer.showOverlay("src.pages.pag2.modal", {
+            isModal = true, 
+            effect = "fade",
+            time = 400
+        })
+    end
+
+    local openButton = display.newImageRect(sceneGroup,"src/assets/info.png",  35, 35);
+    openButton.x = display.contentWidth - 710
+    openButton.y = display.contentHeight/2 - 460
+    
+    openButton:addEventListener("tap", abrirModal)
+
     local texto1 = display.newText({
         parent = sceneGroup,
         text = "A taxonomia é o ramo da biologia que se dedica a classificar os seres vivos em grupos com base em suas semelhanças e diferenças, organizando-os em categorias taxonômicas.",
